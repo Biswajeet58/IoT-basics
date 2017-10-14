@@ -1,0 +1,81 @@
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+
+
+
+WiFiServer server(80);
+
+const short int BULB1 = 4; //GPIO4
+//const short int BULB2 = 5;//GPIO5
+
+void setup() {
+  // put your setup code here, to run once:
+
+  WiFi.mode(WIFI_AP);//
+  WiFi.softAP("USER","user@12345");//
+  server.begin();//
+
+  Serial.begin(115200);
+
+  IPAddress serip = WiFi.softAPIP();
+  Serial.print("IP=");
+  Serial.println(serip);
+
+pinMode(BULB1, OUTPUT); // Initialize the BULB1 pin as an output 
+//pinMode(BULB2, OUTPUT); // Initialize the BULB2 pin as an output
+
+digitalWrite(BULB1,HIGH);//Initial state Active High
+//digitalWrite(BULB2,HIGH);//Initial state Sctive High
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+  
+
+WiFiClient client = server.available();
+if (!client) { 
+return; 
+}
+
+String cstr = client.readStringUntil('\r');
+
+if((cstr.indexOf("/BULB1off")) != -1)
+{
+
+  digitalWrite(BULB1,HIGH);
+}
+else if((cstr.indexOf("/BULB1on")) != -1){
+  digitalWrite(BULB1,LOW);
+  
+}
+/*
+if((cstr.indexOf("/BULB2on")) != -1){
+digitalWrite(BULB2,LOW);
+  
+}
+else if((cstr.indexOf("/BULB2off")) != -1){
+  digitalWrite(BULB2,HIGH);
+  
+}
+ */
+
+String str_webpage = "HTTP/1.1 200 OK\r\n";
+      str_webpage += "Content-Type: text/html\r\n\r\n";
+      str_webpage += "<!DOCTYPE HTML>\r\n<html>\r\n";
+      str_webpage += "<br><input type=\"button\"name=\"b1\" value=\"Bulb1ON\" onclick=\"location.href='/BULB1on'\">";
+      str_webpage += "<br><br><br>";
+      str_webpage += "<input type=\"button\"name=\"b1\" value=\"Bulb1OFF\" onclick=\"location.href='/BULB1off'\">";
+      str_webpage += "</html>\n";
+
+     client.flush();
+     client.print(str_webpage);
+     delay(1);
+      
+}
+
+
+
+
